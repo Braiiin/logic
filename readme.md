@@ -13,6 +13,43 @@ a RESTful API for basic CRUD operations, for now
 1. Launch datastore. `service mongodb start`.
 1. Launch service. `python3 run.py`.
 
+## Developer Guidelines
+
+###Docstrings
+
+All docstrings should use one of the following two formats:
+
+Minimal
+```
+"""Basic docstring for the method or class"""
+```
+
+Detailed
+```
+"""
+One-liner description
+
+Information
+-----------
+Basic information about usage
+
+Detail
+------
+Optional section with clarifications that may not be needed
+
+Example
+-------
+Sample Usage
+"""
+```
+
+###Separatation of Purpose
+
+Here are the purposes for each file. Heed these guidelines when deciding where to put code.
+
+- api/ : handling input/output for models
+- 
+
 ##Production Deployment
 
 Assumes a non-root, sudo-capable user, deploying to Ubuntu 14.04

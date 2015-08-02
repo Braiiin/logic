@@ -55,7 +55,7 @@ def create_app(config='DevelopmentConfig', **configs):
 	bcrypt.init_app(app)
 	
 	# register all blueprints
-	for view in app.config.LIVE:
+	for view in app.config['LIVE']:
 		mod = importlib.import_module('server.{mod}.views'.format(mod=view))
 		app.register_blueprint(getattr(mod, view))
 	

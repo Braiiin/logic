@@ -5,3 +5,4 @@ flask-login==0.2.11
 flask-bcrypt==0.6.2
 markdown==2.6.2
 flask_kvsession==0.6.2
+webargs==0.14.0
