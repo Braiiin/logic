@@ -55,24 +55,34 @@ class BaseAPI(View):
 	Example
 	-------
 	class CourseAPI(APIView):
+	
+		methods = {
+			'get': {
+				'args': {
+					'query': Arg(str, required=True)
+				}
+			}
+		}
+	
 		endpoints = {
 			# save is not impelemented below, so model.save() invoked
 			'save': {
+				'methods': {'put'},
 				'args': {
 					'title': Arg(str, required=True)  # a webarg
 				}
 			},
 			'get_students': {
-				'get': {
-					'args': {
-						'type': Arg(str)
-					}
+				# methods are by default = {'get'}
+				'args': {
+					'type': Arg(str)
 				}
 			}
 		}
 	"""
 
 	endpoints = {}
+	models = {}
 
 	def dispatch_request(self, path=''):
 		"""
@@ -99,30 +109,36 @@ class BaseAPI(View):
 			response.update(dict(status=520, message='Unknown exception occurred.'))
 		finally:
 			return jsonify(response), response['status']
-		
-	def _get_method(self, path):
-		"""Determines format id, method, or id/method and then returns
-		oid, method, settings
-		"""
-		if '/' in path:
-			oid, method = path.split('/')
-			return oid, method, self.endpoints[method]
-		if hasattr(self, path):  # assumes that ID will never be function name
-			return None, path, self.endpoints[path]
-		if request.method.lower() in self.endpoints.keys():
-			return path, request.method.lower(), self.endpoints
-		raise MethodDoesNotExist()
+
+	def _call_method(self, path):
+		"""Invokes method and returns response"""
+		oid, method, settings = self._get_settings(path)
+		data = self._get_args(settings)
+		obj = self.model.objects(id=ObjectId(oid)).get() if oid else None
+		function = self._get_function(obj, method)
+		return function(obj, data)	
 
 	def _get_settings(self, path):
 		"""Retrieve method settings"""
 		try:
-			oid, method, settings = self._get_method(path)
+			oid, function, settings, methods = self._get_method(path)
 		except KeyError:
 			raise MethodDoesNotExist()
-		if request.method.lower() not in settings.keys():
+		if request.method.lower() not in methods:
 			raise MethodNotAllowed()
-		settings = settings[request.method.lower()]
-		return oid, settings.get('method', method), settings
+		return oid, function, settings
+	
+	def _get_method(self, path):
+		"""Determines format id, method, or id/method and then returns
+		oid, method, settings, allowed_methods
+		"""
+		oid, function, method = None, path, request.method.lower()
+		if ObjectId.is_valid(path) or not path:
+			return path, method, self.methods[method], self.methods.keys()
+		if '/' in path:
+			oid, function = path.split('/')
+		settings = self.endpoints[function]
+		return oid, function, settings, settings.get('methods', set())
 
 	def _get_args(self, settings):
 		"""Retrieve web arguments"""
@@ -134,17 +150,7 @@ class BaseAPI(View):
 			return getattr(self, method)
 		if hasattr(obj, method):
 			return getattr(obj, method)
-		if not obj:
-			raise MethodDoesNotExist('API call missing an ID - intended?')
-		raise MethodDoesNotExist()
-	
-	def _call_method(self, path):
-		"""Invokes method and returns response"""
-		oid, method, settings = self._get_settings(path)
-		data = self._get_args(settings)
-		obj = self.model(id=ObjectId(oid)).get() if oid else None
-		function = self._get_function(obj, method)
-		return function(obj, data)
+		raise MethodDoesNotExist('Endpoint is registered but is missing.')
 	
 	@property
 	def model(self):

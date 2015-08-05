@@ -8,7 +8,7 @@ class UserAPI(BaseAPI):
 	
 	model = models.User
 
-	endpoints = {
+	methods = {
 		'get': {
 			'args': {
 				'name': Arg(str, required=True)
