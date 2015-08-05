@@ -1,4 +1,4 @@
-from server.v1.models import Document, db
+from app.v1.models import Document, db
 
 
 class User(Document):
@@ -7,4 +7,3 @@ class User(Document):
 	username = db.StringField()
 	email = db.EmailField()
 	password = db.StringField()
-	

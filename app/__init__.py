@@ -7,6 +7,7 @@ uses config.py configurations for setup
 
 """
 import importlib
+import logging
 
 from flask import Flask
 from flask_mongoengine import MongoEngine
@@ -27,6 +28,8 @@ kv_session = KVSessionExtension()
 login_manager = LoginManager()
 bcrypt = Bcrypt()
 
+logger = logging.getLogger('API')
+
 
 def create_app(config='DevelopmentConfig', **configs):
 	"""
@@ -36,7 +39,7 @@ def create_app(config='DevelopmentConfig', **configs):
 
 	# Create and set app config
 	app = Flask(__name__)
-	app.config.from_object('server.config.%s' % config)
+	app.config.from_object('app.config.%s' % config)
 	app.config.update(**configs)
 	
 	# initialize MongoEngine with app
@@ -56,7 +59,7 @@ def create_app(config='DevelopmentConfig', **configs):
 	
 	# register all blueprints
 	for view in app.config['LIVE']:
-		mod = importlib.import_module('server.{mod}.views'.format(mod=view))
+		mod = importlib.import_module('app.{mod}.views'.format(mod=view))
 		app.register_blueprint(getattr(mod, view))
 	
 	return app

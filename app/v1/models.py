@@ -1,11 +1,7 @@
-from flask.ext.mongoengine import MongoEngine
 import datetime
 import importlib
 from bson import ObjectId, DBRef
-from . import constants
-
-
-db = MongoEngine()
+from . import constants, db
 
 
 class Document(db.Document):
@@ -13,6 +9,11 @@ class Document(db.Document):
 	primary = '_id'
 	created_at = db.DateTimeField(default=datetime.datetime.now)
 	updated_at = db.DateTimeField(default=datetime.datetime.now)
+	meta = dict(abstract=True)
+
+	def __init__(self, *args, **kwargs):
+		"""Initializes methods with permissions checks"""
+		super().__init__(*args, **kwargs)
 
 	@classmethod
 	def choices(cls, *args):
@@ -22,25 +23,15 @@ class Document(db.Document):
 	def __str__(self):
 		return str(getattr(self, self.primary))
 
-	meta = {
-		'abstract': True
-	}
 
-
-def setup_models():
-	"""Setup models dictionary"""
-	models, dirs = {}, constants.MODULES
-	for dir in dirs:
-		mod = importlib.import_module('server.v1.%s.models' % dir)
-		[models.setdefault(k, v) for k, v in vars(mod).items() 
-		 if k[0] == k.upper()[0]]
-	return models
-
-
+# TODO(Alvin): store all models in radix tree in __init__.py
 def dereference(self):
-	""" dereference a DBRef """
+	"""dereference a DBRef"""
 	collection, _id = self._DBRef__collection, self._DBRef__id
-	return models[collection].objects(id=ObjectId(_id)).get()
+	for dir in constants.MODULES:
+		mod = importlib.import_module('app.v1.%s.models' % dir)
+		for k, v in vars(mod).items():
+			if k == collection and hasattr(k, 'objects'):
+				return v.objects(id=ObjectId(_id)).get()
 
-models = setup_models()
 DBRef.get = dereference

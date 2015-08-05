@@ -13,25 +13,21 @@ The API is only responsible for correcting formats for input, output. It should
 not perform business logic.
 """
 
-import json
+from . import logger
 from bson import ObjectId
-from flask import request
+from flask import request, jsonify
 from flask.views import View
 from webargs.flaskparser import FlaskParser
 from .exceptions import MethodDoesNotExist, APIException, MethodNotAllowed
 
 
-def jsonify(obj):
-	"""Converts object to valid JSON string"""
-	try:
-		return json.dumps(obj)
-	except TypeError:
-		if hasattr(obj, 'to_json'):
-			return jsonify(obj.to_json())
-		if hasattr(obj, 'items') and callable(obj.items):
-			return jsonify({k: jsonify(v) for k, v in obj.items()})
-		if hasattr(obj, '__iter__'):
-			return jsonify([jsonify(e) for e in obj])
+parser = FlaskParser()
+
+
+@parser.error_handler
+def handle_bad_request(err):
+	"""Special error handling for API"""
+	raise APIException(status=422, message=str(err))
 
 
 class BaseAPI(View):
@@ -59,7 +55,7 @@ class BaseAPI(View):
 	Example
 	-------
 	class CourseAPI(APIView):
-		methods = {
+		endpoints = {
 			# save is not impelemented below, so model.save() invoked
 			'save': {
 				'args': {
@@ -68,13 +64,15 @@ class BaseAPI(View):
 			},
 			'get_students': {
 				'get': {
-					'type': Arg(str)
+					'args': {
+						'type': Arg(str)
+					}
 				}
 			}
 		}
 	"""
 
-	model = None
+	endpoints = {}
 
 	def dispatch_request(self, path=''):
 		"""
@@ -88,17 +86,19 @@ class BaseAPI(View):
 		id/method
 
 		"""
-		response = dict(code=444, message='No response')
+		response = dict(status=444, message=None, data={})
 		try:
-			response = self._call_method(path)
+			response.update(dict(status=200, data=self._call_method(path)))
 		except APIException as e:
-			response = dict(code=e.code, message=e.message)
+			response.update(dict(status=e.status, message=e.message))
 		except Exception as e:
-			response = dict(code=500, message=str(e))
+			logger.exception(str(e))
+			response.update(dict(status=500, message=str(e)))
 		except:
-			response = dict(code=520, message='Unknown exception occurred.')
+			logger.exception('Unknown exception occurred')
+			response.update(dict(status=520, message='Unknown exception occurred.'))
 		finally:
-			return jsonify(response)
+			return jsonify(response), response['status']
 		
 	def _get_method(self, path):
 		"""Determines format id, method, or id/method and then returns
@@ -106,12 +106,12 @@ class BaseAPI(View):
 		"""
 		if '/' in path:
 			oid, method = path.split('/')
-			return oid, method, self.methods[method]
+			return oid, method, self.endpoints[method]
 		if hasattr(self, path):  # assumes that ID will never be function name
-			return None, path, self.methods[path]
-		if len(path) is not 24:  # rudimentary check for ObjectId
-			raise MethodDoesNotExist()
-		return path, request.method.lower(), self.methods
+			return None, path, self.endpoints[path]
+		if request.method.lower() in self.endpoints.keys():
+			return path, request.method.lower(), self.endpoints
+		raise MethodDoesNotExist()
 
 	def _get_settings(self, path):
 		"""Retrieve method settings"""
@@ -121,22 +121,15 @@ class BaseAPI(View):
 			raise MethodDoesNotExist()
 		if request.method.lower() not in settings.keys():
 			raise MethodNotAllowed()
-		return oid, method, settings[request.method.lower()]
+		settings = settings[request.method.lower()]
+		return oid, settings.get('method', method), settings
 
 	def _get_args(self, settings):
 		"""Retrieve web arguments"""
-		return FlaskParser().parse(settings.get('args', {}), request)
-
+		return parser.parse(settings.get('args', {}), request)
+	
 	def _get_function(self, obj, method):
-		"""
-		Lookup function to be called
-
-		Information
-		-----------
-		API methods take precedence; if the method does not exist, BaseAPI will
-		attempt to invoke the method with the model. Note that model methods not
-		registered with the API cannot be called.
-		"""
+		"""Lookup function to be called - first search API, then model"""
 		if hasattr(self, method):
 			return getattr(self, method)
 		if hasattr(obj, method):
@@ -152,3 +145,8 @@ class BaseAPI(View):
 		obj = self.model(id=ObjectId(oid)).get() if oid else None
 		function = self._get_function(obj, method)
 		return function(obj, data)
+	
+	@property
+	def model(self):
+		"""Alerts programmer of unset model"""
+		raise NotImplementedError('Each API requires a model')
