@@ -2,6 +2,25 @@
 
 a RESTful API for basic CRUD operations, for now
 
+##Usage
+
+Each service has a number of endpoints. For now, each "service" is quite simply
+another model.
+
+RESTful API endpoints include the following:
+
+- `/api/v1/[entity]` : `GET`, `POST`
+- `/api/v1/[entity]/[oid]` : `PUT`, `DELETE`
+
+All other endpoints will be formatted in one of two ways. Each method will have
+its own set of allowed HTTP methods:
+
+- `/api/v1/[entity]/[endpoint]`
+- `/api/v1/[entity]/[oid]/[endpoint]`
+
+By default, services implement and expose the `get`, `fetch`, `post`, `put`, and
+`delete` endpoints.
+
 ##Developer Version
 
 
@@ -45,7 +64,7 @@ Sample Usage
 """
 ```
 
-###Separatation of Purpose
+###Separation of Purpose
 
 Heed these guidelines when deciding where to put code.
 
