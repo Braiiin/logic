@@ -5,7 +5,7 @@ from api.v1.core.models import User
 
 class TestModels(TestBase):
 
-	setup_method = lambda self, method: conftest.clear_database()
+	setup_method = lambda self, method: conftest.clear_models(User)
 	
 	def test_user_CRUD(self):
 		"""basic User CRUD operations"""

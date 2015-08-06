@@ -15,4 +15,11 @@ def clear_database():
 	Connection().drop_database(config.TestConfig.MONGODB_DB)
 	
 
+def clear_models(*models):
+	"""Clears a set of collections"""
+	assert hasattr(models, '__iter__'), 'Accepts iterable'
+	for model in models:
+		model.objects.delete()
+	
+
 app = app()

@@ -22,4 +22,4 @@ class Session(Document):
 	access_token = db.StringField(required=True)
 	
 	
-anonymous = User(email='_anon').save()
+anonymous = User(email='an@nymo.us').save()

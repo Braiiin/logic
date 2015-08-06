@@ -13,7 +13,7 @@ The API is only responsible for correcting formats for input, output. It should
 not perform business logic.
 """
 
-from . import logger, current_user
+from . import logger, session, current_user
 import functools
 from bson import ObjectId
 from flask import request, jsonify
@@ -41,7 +41,7 @@ def need(needs):
 			if isinstance(needs, str):
 				needs = [needs]
 			assert isinstance(needs, list), 'Need must be string or list'
-			violations = [not self.can(obj, current_user, n) for n in needs]
+			violations = [not self.can(obj, session['user'], n) for n in needs]
 			if any(violations):
 				raise PermissionError()
 			return f(self, obj, data)
@@ -123,6 +123,7 @@ class BaseAPI(View):
 		"""
 		response = dict(status=444, message='No response', data={})
 		try:
+			session['user'] = current_user()
 			response.update(dict(
 				status=200, 
 				message='Success', 

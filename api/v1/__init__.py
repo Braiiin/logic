@@ -10,7 +10,10 @@ from .core.models import User, anonymous, Session
 from flask import request
 
 
-def authenticate():
+session = {}
+
+
+def current_user():
 	"""Returns the user performing this API call"""
 	token = request.args.get('token', None)
 	if not token:
@@ -20,5 +23,3 @@ def authenticate():
 		return anonymous
 	user = session.user.get()
 	return user or anonymous
-	
-current_user = authenticate()
