@@ -14,11 +14,14 @@ not perform business logic.
 """
 
 from . import logger
+import functools
 from bson import ObjectId
 from flask import request, jsonify
 from flask.views import View
+from flask_login import current_user
 from webargs.flaskparser import FlaskParser
-from .exceptions import MethodDoesNotExist, APIException, MethodNotAllowed
+from .exceptions import MethodDoesNotExist, APIException, MethodNotAllowed, \
+	PermissionException
 
 
 parser = FlaskParser()
@@ -28,6 +31,23 @@ parser = FlaskParser()
 def handle_bad_request(err):
 	"""Special error handling for API"""
 	raise APIException(status=422, message=str(err))
+
+
+def need(needs):
+	"""Decorator for endpoints, checks for needs"""
+	def decorator(f):
+		@functools.wraps(f)
+		def helper(self, obj, data):
+			nonlocal needs
+			if isinstance(needs, str):
+				needs = [needs]
+			assert isinstance(needs, list), 'Need must be string or list'
+			violations = [not self.can(obj, current_user, n) for n in needs]
+			if any(violations):
+				raise PermissionException()
+			return f(self, obj, data)
+		return helper
+	return decorator
 
 
 class BaseAPI(View):
@@ -81,8 +101,18 @@ class BaseAPI(View):
 		}
 	"""
 
-	endpoints = {}
-	models = {}
+	methods = {
+		'get': {},
+	    'put': {}
+	}
+
+	endpoints = {
+		'save': {},
+	    'fetch': {},
+	    'delete': {}
+	}
+	
+	# Functionality
 
 	def dispatch_request(self, path=''):
 		"""
@@ -96,9 +126,9 @@ class BaseAPI(View):
 		id/method
 
 		"""
-		response = dict(status=444, message=None, data={})
+		response = dict(status=444, message='No response', data={})
 		try:
-			response.update(dict(status=200, data=self._call_method(path)))
+			response.update(dict(status=200, message='Success', data=self._call_method(path)))
 		except APIException as e:
 			response.update(dict(status=e.status, message=e.message))
 		except Exception as e:
@@ -114,7 +144,7 @@ class BaseAPI(View):
 		"""Invokes method and returns response"""
 		oid, method, settings = self._get_settings(path)
 		data = self._get_args(settings)
-		obj = self.model.objects(id=ObjectId(oid)).get() if oid else None
+		obj = self.model.objects(id=ObjectId(oid)).get() if oid else self.model()
 		function = self._get_function(obj, method)
 		return function(obj, data)	
 
@@ -138,7 +168,7 @@ class BaseAPI(View):
 		if '/' in path:
 			oid, function = path.split('/')
 		settings = self.endpoints[function]
-		return oid, function, settings, settings.get('methods', set())
+		return oid, function, settings, settings.get('methods', {'get'})
 
 	def _get_args(self, settings):
 		"""Retrieve web arguments"""
@@ -152,7 +182,47 @@ class BaseAPI(View):
 			return getattr(obj, method)
 		raise MethodDoesNotExist('Endpoint is registered but is missing.')
 	
+	# Required attributes
+	
 	@property
 	def model(self):
-		"""Alerts programmer of unset model"""
-		raise NotImplementedError('Each API requires a model')
+		"""API corresponding model"""
+		raise NotImplementedError()
+	
+	# Required methods
+	
+	def can(self, obj, user, permission):
+		"""Permissions checking for objects, returns boolean"""
+		raise NotImplementedError()
+	
+	# Default endpoints
+	
+	@need('get')
+	def get(self, obj, data):
+		"""Basic get operation for current object, allows API call to include
+		an ID or object parameters. If an ID is specified, object parameters
+		are ignored."""
+		return obj or self.model(**data).get()
+	
+	@need('get')
+	def fetch(self, _, data):
+		"""Basic fetch operation for current object"""
+		return self.model(**data).fetch()
+	
+	@need('put')
+	def put(self, obj, data):
+		"""Basic put operation for current object"""
+		assert obj is None, 'Put creates a new object.'
+		return self.model(**data).put()
+
+	@need('save')
+	def save(self, obj, data):
+		"""Basic update operation for current object"""
+		assert obj is not None, 'ObjectID does not belong to an object.'
+		return obj.load(**data).save()
+	
+	@need('delete')
+	def delete(self, obj, _):
+		"""Basic delete operation for current object"""
+		assert obj is not None, 'No such object.'
+		return obj.delete()

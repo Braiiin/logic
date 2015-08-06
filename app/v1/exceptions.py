@@ -12,10 +12,15 @@ class APIException(Exception):
 		self.message = message or self.message
 		self.status = status or self.status
 	
+	
+class PermissionException(APIException):
+	status = 403
+	message = 'You do not have the right permissions.'
+
 
 class MethodDoesNotExist(APIException):
 	status = 404
-	message = 'Method endpoint does not exist.'
+	message = 'Requested endpoint does not exist.'
 	
 	
 class MethodNotAllowed(APIException):

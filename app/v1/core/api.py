@@ -9,13 +9,16 @@ class UserAPI(BaseAPI):
 	model = models.User
 
 	methods = {
-		'get': {
-			'args': {
-				'name': Arg(str, required=True)
-			}
-		},
+		'get': {},
+		'put': {}
+	}
+
+	endpoints = {
+		'save': {},
+		'fetch': {},
+	    'delete': {}
 	}
 	
-	def get(self, obj, data):
-		"""Basic get operation"""
-		return data
+	def can(self, obj, user, need):
+		"""Required permissions implementation"""
+		return True
