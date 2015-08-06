@@ -1,6 +1,6 @@
 from .test_base import TestBase
 from tests import conftest
-from app.v1.core.models import User
+from api.v1.core.models import User
 
 
 class TestModels(TestBase):

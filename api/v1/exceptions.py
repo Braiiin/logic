@@ -13,7 +13,7 @@ class APIException(Exception):
 		self.status = status or self.status
 	
 	
-class PermissionException(APIException):
+class PermissionError(APIException):
 	status = 403
 	message = 'You do not have the right permissions.'
 

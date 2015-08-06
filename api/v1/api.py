@@ -13,15 +13,14 @@ The API is only responsible for correcting formats for input, output. It should
 not perform business logic.
 """
 
-from . import logger
+from . import logger, current_user
 import functools
 from bson import ObjectId
 from flask import request, jsonify
 from flask.views import View
-from flask_login import current_user
 from webargs.flaskparser import FlaskParser
 from .exceptions import MethodDoesNotExist, APIException, MethodNotAllowed, \
-	PermissionException
+	PermissionError
 
 
 parser = FlaskParser()
@@ -44,7 +43,7 @@ def need(needs):
 			assert isinstance(needs, list), 'Need must be string or list'
 			violations = [not self.can(obj, current_user, n) for n in needs]
 			if any(violations):
-				raise PermissionException()
+				raise PermissionError()
 			return f(self, obj, data)
 		return helper
 	return decorator
@@ -103,13 +102,13 @@ class BaseAPI(View):
 
 	methods = {
 		'get': {},
-	    'put': {}
+	    'post': {},
+	    'put': {},
+	    'delete': {}
 	}
 
 	endpoints = {
-		'save': {},
-	    'fetch': {},
-	    'delete': {}
+		'fetch': {}
 	}
 	
 	# Functionality
@@ -120,15 +119,14 @@ class BaseAPI(View):
 
 		Detail
 		-----------
-		Accepts a path that may be in one of three formats:
-		id
-		method
-		id/method
-
+		Accepts a path that may be in one of three formats: id, method, or id/method
 		"""
 		response = dict(status=444, message='No response', data={})
 		try:
-			response.update(dict(status=200, message='Success', data=self._call_method(path)))
+			response.update(dict(
+				status=200, 
+				message='Success', 
+				data=self._call_method(path)))
 		except APIException as e:
 			response.update(dict(status=e.status, message=e.message))
 		except Exception as e:
@@ -206,18 +204,18 @@ class BaseAPI(View):
 	
 	@need('get')
 	def fetch(self, _, data):
-		"""Basic fetch operation for current object"""
+		"""Fetch multiple objects"""
 		return self.model(**data).fetch()
 	
-	@need('put')
-	def put(self, obj, data):
-		"""Basic put operation for current object"""
+	@need('post')
+	def post(self, obj, data):
+		"""Create"""
 		assert obj is None, 'Put creates a new object.'
 		return self.model(**data).put()
 
-	@need('save')
-	def save(self, obj, data):
-		"""Basic update operation for current object"""
+	@need('put')
+	def put(self, obj, data):
+		"""Update"""
 		assert obj is not None, 'ObjectID does not belong to an object.'
 		return obj.load(**data).save()
 	

@@ -1,5 +1,5 @@
 from .test_base import TestBase
-from app.v1.exceptions import *
+from api.v1.exceptions import *
 
 
 class TestException(TestBase):

@@ -30,6 +30,8 @@ bcrypt = Bcrypt()
 
 logger = logging.getLogger('API')
 
+root = 'api'
+
 
 def create_app(config='DevelopmentConfig', **configs):
 	"""
@@ -39,17 +41,17 @@ def create_app(config='DevelopmentConfig', **configs):
 
 	# Create and set app config
 	app = Flask(__name__)
-	app.config.from_object('app.config.%s' % config)
+	app.config.from_object('%s.config.%s' % (root, config))
 	app.config.update(**configs)
 	
 	# initialize MongoEngine with app
 	db.init_app(app)
-	store = MongoStore(
+	db.store = MongoStore(
 		getattr(db.connection, app.config['MONGODB_DB']),
 		app.config['SESSION_STORE'])
 	
 	# Substitute client-side with server-side sessions
-	kv_session.init_app(app, store)
+	kv_session.init_app(app, db.store)
 	
 	# initialize Flask-Login with app
 	login_manager.init_app(app)
@@ -59,7 +61,7 @@ def create_app(config='DevelopmentConfig', **configs):
 	
 	# register all blueprints
 	for view in app.config['LIVE']:
-		mod = importlib.import_module('app.{mod}.views'.format(mod=view))
+		mod = importlib.import_module('%s.%s.views' % (root, view))
 		app.register_blueprint(getattr(mod, view))
 	
 	return app

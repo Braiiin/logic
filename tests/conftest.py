@@ -1,4 +1,4 @@
-from app import create_app, config
+from api import create_app, config
 from pymongo import Connection
 import pytest
 

@@ -1,6 +1,7 @@
 import datetime
 import importlib
 import json
+import api
 from bson import ObjectId, DBRef
 from . import constants, db
 from mongoengine import DoesNotExist
@@ -60,7 +61,7 @@ def dereference(self):
 	"""dereference a DBRef"""
 	collection, _id = self._DBRef__collection, self._DBRef__id
 	for dir in constants.MODULES:
-		mod = importlib.import_module('app.v1.%s.models' % dir)
+		mod = importlib.import_module('%s.v1.%s.models' % (api.root, dir))
 		for k, v in vars(mod).items():
 			if k == collection and hasattr(k, 'objects'):
 				return v.objects(id=ObjectId(_id)).get()

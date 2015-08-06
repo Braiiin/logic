@@ -13,6 +13,8 @@ a RESTful API for basic CRUD operations, for now
 1. Launch datastore. `service mongodb start`.
 1. Launch service. `python3 run.py`.
 
+*For subsequent runs, after installation, you can use `source activate.sh`.*
+
 ## Developer Guidelines
 
 ###Docstrings
@@ -45,10 +47,10 @@ Sample Usage
 
 ###Separatation of Purpose
 
-Here are the purposes for each file. Heed these guidelines when deciding where to put code.
+Heed these guidelines when deciding where to put code.
 
-- api/ : handling input/output for models
-- 
+- api.py : handling input/output for models, permissions by endpoint
+- models.py : business logic
 
 ##Production Deployment
 
