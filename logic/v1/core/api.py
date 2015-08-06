@@ -1,4 +1,4 @@
-from api.v1.api import BaseAPI, need
+from logic.v1.api import BaseAPI, need
 from . import models
 
 

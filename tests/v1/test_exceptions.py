@@ -1,5 +1,5 @@
 from .test_base import TestBase
-from api.v1.exceptions import *
+from logic.v1.exceptions import *
 
 
 class TestException(TestBase):

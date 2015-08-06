@@ -5,7 +5,7 @@ Examples
 /api/v1/user/123456789012345678901234
 """
 
-from api import db, logger
+from logic import db, logger
 from .core.models import User, anonymous, Session
 from flask import request
 

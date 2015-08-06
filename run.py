@@ -1,5 +1,5 @@
 # the main Flask application
-from api import create_app
+from logic import create_app
 
 app = create_app()
 

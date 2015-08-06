@@ -1,4 +1,4 @@
-from api.v1.models import Document, db
+from logic.v1.models import Document, db
 from flask_login import UserMixin
 
 
