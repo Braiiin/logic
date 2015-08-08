@@ -8,7 +8,9 @@ class UserAPI(BaseAPI):
 	model = models.User
 
 	methods = {
-		'get': {},
+		'get': {
+			'args': model.fields_to_args(override={'required': False})
+		},
 		'post': {
 			'args': model.fields_to_args()
 		},
@@ -37,7 +39,9 @@ class SessionAPI(BaseAPI):
 	model = models.Session
 	
 	methods = {
-		'get': {},
+		'get': {
+			'args': model.fields_to_args(override={'required': False})
+		},
 		'post': {
 			'args': model.fields_to_args()
 		},

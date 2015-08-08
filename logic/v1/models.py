@@ -28,7 +28,7 @@ class Document(db.Document):
 		return [(arg, arg) for arg in args]
 	
 	@classmethod
-	def _field_to_arg(cls, field):
+	def _field_to_arg(cls, field, override=None):
 		"""Converts a single field to an Arg"""
 		to_arg = {
 			'ReferenceField': KeyArg,
@@ -45,10 +45,11 @@ class Document(db.Document):
 			_kwargs['required'] = True
 		if field.default:
 			_kwargs['default'] = field.default
+		_kwargs.update(override or {})
 		return _cls(_type, **_kwargs)
 	
 	@classmethod
-	def fields_to_args(cls):
+	def fields_to_args(cls, override=None):
 		"""Converts fields to webargs"""
 		return {k: cls._field_to_arg(v) for k, v in cls._fields.items()}
 	
@@ -82,7 +83,8 @@ class Document(db.Document):
 		return str(getattr(self, self.primary))
 
 
-# TODO(Alvin): store all models in radix tree in __init__.py
+# TODO(Alvin): store all models in radix tree in __init__.py 
+# or find mongoengine dereference
 def dereference(self):
 	"""dereference a DBRef"""
 	collection, _id = self._DBRef__collection, self._DBRef__id
