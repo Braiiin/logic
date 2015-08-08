@@ -4,7 +4,7 @@ import json
 import logic
 from bson import ObjectId, DBRef
 from . import constants, db
-from .args import Arg, KeyArg
+from .args import Arg, KeyArg, JsonArg
 from mongoengine import DoesNotExist
 
 
@@ -31,16 +31,16 @@ class Document(db.Document):
 	def _field_to_arg(cls, field):
 		"""Converts a single field to an Arg"""
 		to_arg = {
-			'ReferenceField': KeyArg
+			'ReferenceField': KeyArg,
+		    'DictField': JsonArg,
 		}
 		to_type = {
 			'ReferenceField': getattr(field, 'document_type_obj', None),
 			'IntField': int
 		}
-		to_kwargs = {}
 		name = field.__class__.__name__
 		_cls = to_arg.get(name, Arg)
-		_type, _kwargs = to_type.get(name, str), to_kwargs.get(name, {})
+		_type, _kwargs = to_type.get(name, str), {}
 		if field.required:
 			_kwargs['required'] = True
 		if field.default:
