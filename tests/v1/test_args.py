@@ -13,7 +13,8 @@ class TestArgs(TestBase):
 	
 	def test_key_arg(self, app):
 		"""tests that key args can be dereferenced"""
-		user = User(name='wh@tever.com').save()
+		u = {'email': 'wh@tever.com', 'username': 'what', 'password': 'w'}
+		user = User(**u).save()
 		with app.test_request_context('/?test=%s' % str(user.id)):
 			user_key = parser.parse_arg('test', KeyArg(User), flask.request)
 			assert user_key.get() == user

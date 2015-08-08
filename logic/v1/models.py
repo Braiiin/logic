@@ -42,8 +42,7 @@ class Document(db.Document):
 		name = field.__class__.__name__
 		_cls = to_arg.get(name, Arg)
 		_type, _kwargs = to_type.get(name, str), {}
-		if field.required:
-			_kwargs['required'] = True
+		_kwargs['required'] = field.required
 		if field.default:
 			_kwargs['default'] = field.default
 		_kwargs.update(override or {})
@@ -52,7 +51,7 @@ class Document(db.Document):
 	@classmethod
 	def fields_to_args(cls, override=None):
 		"""Converts fields to webargs"""
-		return {k: cls._field_to_arg(v) for k, v in cls._fields.items()}
+		return {k: cls._field_to_arg(v, override) for k, v in cls._fields.items()}
 	
 	def load(self, **kwargs):
 		"""Loads kwargs into object"""
@@ -63,6 +62,10 @@ class Document(db.Document):
 		"""Converts to dictionary"""
 		return {k: v for k, v in json.loads(self.to_json()).items() 
 		        if k not in excludes}
+
+	def post(self):
+		"""Create operation"""
+		return self.save(force_insert=True)
 
 	def get(self):
 		"""Basic get operation"""
@@ -77,20 +80,14 @@ class Document(db.Document):
 
 	def put(self):
 		"""Alias for save"""
-		return self.save()
+		self.save()
 	
-	def save(self):
-		"""save as equivalent to get_or_create"""
-		data, filter = self.to_dict(), self.filter
-		sets = {'set__%s' % k: v for k, v in data.items()}
-		if not self.objects.filter(**filter).update(upsert=True, **sets):
-			raise APIException('Unknown error while saving %s' % str(self.to_dict()))
-		return self
-
-	@property
-	def filter(self):
-		"""Return filter, primary key"""
-		return {self.primary: getattr(self, self.primary)}
+	def delete(self):
+		"""Check for ID before deleting"""
+		if not hasattr(self, 'id') or not self.id:
+			raise APIException('Object has no ID. Either "get" before "delete,"'
+							   ' or this object does not exist.')
+		super(Document, self).delete()
 
 	def __str__(self):
 		"""String representation using primary field"""
