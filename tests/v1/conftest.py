@@ -1,5 +1,5 @@
-from logic import create_app, config
-from pymongo import Connection
+from logic import create_app, config, db
+from mongoengine.connection import _get_db
 import pytest
 
 
@@ -12,7 +12,8 @@ def app():
 
 def clear_database():
 	"""Clears database"""
-	Connection().drop_database(config.TestConfig.MONGODB_DB)
+	db = _get_db()
+	db.connection.drop_database(config.TestConfig.MONGODB_DB)
 	
 
 def clear_models(*models):
@@ -20,6 +21,11 @@ def clear_models(*models):
 	assert hasattr(models, '__iter__'), 'Accepts iterable'
 	for model in models:
 		model.objects.delete()
-	
 
-app = app()
+
+def pytest_runtest_setup(item):
+	"""Setup for each test"""
+	clear_database()
+	print('setting up', item)
+
+test = app()

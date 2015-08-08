@@ -9,8 +9,12 @@ class UserAPI(BaseAPI):
 
 	methods = {
 		'get': {},
-		'post': {},
-		'put': {},
+		'post': {
+			'args': model.fields_to_args()
+		},
+		'put': {
+			'args': model.fields_to_args()	
+		},
 		'delete': {}
 	}
 
@@ -34,8 +38,12 @@ class SessionAPI(BaseAPI):
 	
 	methods = {
 		'get': {},
-	    'post': {},
-	    'put': {}
+		'post': {
+			'args': model.fields_to_args()
+		},
+		'put': {
+			'args': model.fields_to_args()
+		}
 	}
 	
 	def can(self, session, user, need):

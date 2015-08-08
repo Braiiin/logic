@@ -4,6 +4,7 @@ import json
 import logic
 from bson import ObjectId, DBRef
 from . import constants, db
+from .args import Arg, KeyArg
 from mongoengine import DoesNotExist
 
 
@@ -25,6 +26,31 @@ class Document(db.Document):
 		"""Duplicates all entries of an iterable"""
 		assert isinstance(args[0], str), 'choices() args must be strings'
 		return [(arg, arg) for arg in args]
+	
+	@classmethod
+	def _field_to_arg(cls, field):
+		"""Converts a single field to an Arg"""
+		to_arg = {
+			'ReferenceField': KeyArg
+		}
+		to_type = {
+			'ReferenceField': getattr(field, 'document_type_obj', None),
+			'IntField': int
+		}
+		to_kwargs = {}
+		name = field.__class__.__name__
+		_cls = to_arg.get(name, Arg)
+		_type, _kwargs = to_type.get(name, str), to_kwargs.get(name, {})
+		if field.required:
+			_kwargs['required'] = True
+		if field.default:
+			_kwargs['default'] = field.default
+		return _cls(_type, **_kwargs)
+	
+	@classmethod
+	def fields_to_args(cls):
+		"""Converts fields to webargs"""
+		return {k: cls._field_to_arg(v) for k, v in cls._fields.items()}
 	
 	def load(self, **kwargs):
 		"""Loads kwargs into object"""
@@ -63,7 +89,8 @@ def dereference(self):
 	for dir in constants.MODULES:
 		mod = importlib.import_module('%s.v1.%s.models' % (logic.root, dir))
 		for k, v in vars(mod).items():
-			if k == collection and hasattr(k, 'objects'):
+			if k == collection and hasattr(v, 'objects'):
+				print(_id)
 				return v.objects(id=ObjectId(_id)).get()
 
 DBRef.get = dereference

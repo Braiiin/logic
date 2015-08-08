@@ -3,7 +3,7 @@ from logic.v1.models import Document, db
 
 class User(Document):
 	
-	statuses = ['inactive', 'active', 'suspended']
+	statuses = Document.choices('inactive', 'active', 'suspended')
 	
 	name = db.StringField()
 	username = db.StringField()
@@ -15,7 +15,7 @@ class User(Document):
 class Session(Document):
 	# Idea: Each time a token is used, send a new access token back to the client
 	
-	statuses = ['logged in', 'logged out']
+	statuses = Document.choices('logged in', 'logged out')
 	
 	user = db.ReferenceField(User, required=True)
 	access_token = db.StringField(required=True)

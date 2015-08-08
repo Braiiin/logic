@@ -1,13 +1,24 @@
 from .test_base import TestBase
-from tests import conftest
+from logic.v1.models import Document, db
 from logic.v1.core.models import User
+from logic.v1.args import Arg, KeyArg
+
+
+class Sample(Document):
+	
+	the_choices = Document.choices('a', 'b', 'c')
+	
+	string = db.StringField()
+	email = db.EmailField()
+	reference = db.ReferenceField(User)
+	choices = db.StringField(choices=the_choices)
+	required = db.StringField(required=True)
+	default = db.StringField(default=True)
 
 
 class TestModels(TestBase):
-
-	setup_method = lambda self, method: conftest.clear_models(User)
 	
-	def test_user_CRUD(self):
+	def test_model_CRUD(self):
 		"""basic User CRUD operations"""
 		n1, n2 = 'yoyo', 'HAH'
 		assert User(name=n1).get() is None
@@ -26,3 +37,24 @@ class TestModels(TestBase):
 		user.delete()
 		assert User(name=n1).get() is None
 		assert User(name=n2).get() is None
+		
+	def test_fields_to_args_basic(self):
+		"""Tests that field_to_args works"""
+		args = Sample.fields_to_args()
+		
+		self.assert_iterables_similar(
+			Sample._fields.keys(),
+		    args.keys())
+		
+		for field in ['string', 'email', 'choices', 'required', 'default']:
+			assert isinstance(args[field], Arg)
+		
+		assert isinstance(args['reference'], Arg)
+		assert args['required'].required is True
+		assert args['default'].default is True
+		
+		for field in ['string', 'email', 'required']:
+			assert args[field].default is None
+			
+		for field in ['string', 'email', 'default']:
+			assert args[field].required is False
