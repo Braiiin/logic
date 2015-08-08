@@ -20,7 +20,11 @@ class UserAPI(BaseAPI):
 	
 	def can(self, obj, user, need):
 		"""Required permissions implementation"""
-		return True
+		if need in ['post', 'fetch', 'get']:
+			return True
+		if need is 'put':
+			return user.id == obj.id
+		return False
 	
 
 class SessionAPI(BaseAPI):
@@ -34,6 +38,10 @@ class SessionAPI(BaseAPI):
 	    'put': {}
 	}
 	
-	def can(self, obj, user, need):
+	def can(self, session, user, need):
 		"""Required permissions implementation"""
-		return True
+		if need in ['get', 'post']:
+			return True
+		if need is 'put':
+			return user.id == session.user.get().id
+		return False

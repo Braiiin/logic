@@ -23,16 +23,32 @@ By default, services implement and expose the `get`, `fetch`, `post`, `put`, and
 
 ##Developer Version
 
+**Installation**
+
+1. Run `check.sh` to ensure both `python3` and `mongodb` are installed.
+2. Run `install.sh`.
+
+Installation is complete. *If installation fails*, see the long version below 
+to debug step-by-step. Otherwise, jump down to "Testing".
 
 1. Make sure Python3, Pip, and Mongodb are installed.
 1. Create new virtaulenv named "env" `python3 -m venv env`.
 1. Launch virtualenv `source env/bin/activate`.
 1. Create mongodb datastore `mkdir env/db`.
 1. Install requirements `pip3 install -r requirements.txt`.
-1. Launch datastore. `service mongodb start`.
-1. Launch service. `python3 run.py`.
 
-*For subsequent runs, after installation, you can use `source activate.sh`.*
+**Testing**
+
+To run tests, use `py.test tests`.
+
+**Getting Started**
+
+1. Launch server `source activate.sh`.
+
+OR
+
+1. Launch datastore. `mongodb --dbpath env/db`.
+1. Launch service. `python3 run.py`.
 
 ## Developer Guidelines
 

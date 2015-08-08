@@ -1,8 +1,7 @@
 from logic.v1.models import Document, db
-from flask_login import UserMixin
 
 
-class User(Document, UserMixin):
+class User(Document):
 	
 	statuses = ['inactive', 'active', 'suspended']
 	
