@@ -32,15 +32,15 @@ def handle_bad_request(err):
 	raise APIException(status=422, message=str(err))
 
 
-def need(needs):
+def need(*needs):
 	"""Decorator for endpoints, checks for needs"""
+	isstr = lambda s: isinstance(s, str)
+	assert hasattr(needs, '__iter__') and all(map(isstr, needs)), \
+		'Need must be string(s)'
+	
 	def decorator(f):
 		@functools.wraps(f)
 		def helper(self, obj, data):
-			nonlocal needs
-			if isinstance(needs, str):
-				needs = [needs]
-			assert isinstance(needs, list), 'Need must be string or list'
 			violations = [not self.can(obj, session['user'], n) for n in needs]
 			if any(violations):
 				raise PermissionError()

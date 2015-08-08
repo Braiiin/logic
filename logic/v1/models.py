@@ -5,6 +5,7 @@ import logic
 from bson import ObjectId, DBRef
 from . import constants, db
 from .args import Arg, KeyArg, JsonArg
+from logic.v1.exceptions import APIException
 from mongoengine import DoesNotExist
 
 
@@ -77,6 +78,19 @@ class Document(db.Document):
 	def put(self):
 		"""Alias for save"""
 		return self.save()
+	
+	def save(self):
+		"""save as equivalent to get_or_create"""
+		data, filter = self.to_dict(), self.filter
+		sets = {'set__%s' % k: v for k, v in data.items()}
+		if not self.objects.filter(**filter).update(upsert=True, **sets):
+			raise APIException('Unknown error while saving %s' % str(self.to_dict()))
+		return self
+
+	@property
+	def filter(self):
+		"""Return filter, primary key"""
+		return {self.primary: getattr(self, self.primary)}
 
 	def __str__(self):
 		"""String representation using primary field"""

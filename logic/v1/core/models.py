@@ -4,12 +4,13 @@ from logic.v1.models import Document, db
 class User(Document):
 	
 	statuses = Document.choices('inactive', 'active', 'suspended')
+	primary = 'email'
 	
 	name = db.StringField()
-	username = db.StringField()
-	email = db.EmailField()
-	password = db.StringField()
-	status = db.StringField(choices=statuses)
+	username = db.StringField(unique=True, required=True)
+	email = db.EmailField(unique=True, required=True)
+	password = db.StringField(required=True)
+	status = db.StringField(choices=statuses, default='active')  # change to inactive
 	
 	
 class Session(Document):
@@ -21,4 +22,4 @@ class Session(Document):
 	access_token = db.StringField(required=True)
 	
 	
-anonymous = User(email='an@nymo.us').save()
+anonymous = User(email='an@nymo.us', username='an', password='@').save()
