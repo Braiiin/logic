@@ -89,3 +89,13 @@ class TestModels(TestBase):
 		args = Sample.fields_to_args(override={'required': False})
 		
 		assert args['required'].required is False
+		
+	def test_dereferencing(self):
+		"""Tests that dbref.get() works"""
+		user = User(
+			email='an@nymo.us',
+			username='an',
+			password='@'
+		).save()
+		user_key = user.to_dbref()
+		assert user_key.get() == user

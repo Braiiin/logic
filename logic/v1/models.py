@@ -1,11 +1,10 @@
 import datetime
-import importlib
-import logic
 from bson import ObjectId, DBRef
 from . import constants, db
 from .args import Arg, KeyArg, JsonArg
 from logic.v1.exceptions import APIException
 from mongoengine import DoesNotExist
+from mongoengine.base import get_document
 
 
 class Document(db.Document):
@@ -117,16 +116,10 @@ class Document(db.Document):
 		return str(getattr(self, self.primary))
 
 
-# TODO(Alvin): store all models in radix tree in __init__.py 
-# or find mongoengine dereference
 def dereference(self):
 	"""dereference a DBRef"""
 	collection, _id = self._DBRef__collection, self._DBRef__id
-	for dir in constants.MODULES:
-		mod = importlib.import_module('%s.v1.%s.models' % (logic.root, dir))
-		for k, v in vars(mod).items():
-			if k == collection and hasattr(v, 'objects'):
-				print(_id)
-				return v.objects(id=ObjectId(_id)).get()
+	model = get_document(collection.capitalize())
+	return model.objects(id=ObjectId(_id)).get()
 
 DBRef.get = dereference

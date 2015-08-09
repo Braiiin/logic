@@ -45,5 +45,7 @@ def create_app(config='DevelopmentConfig', **configs):
 	for view in app.config['LIVE']:
 		mod = importlib.import_module('%s.%s.views' % (root, view))
 		app.register_blueprint(getattr(mod, view))
+		
+
 	
 	return app
