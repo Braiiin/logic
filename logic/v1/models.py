@@ -1,6 +1,6 @@
 import datetime
 from bson import ObjectId, DBRef
-from . import constants, db
+from . import db
 from .args import Arg, KeyArg, JsonArg
 from logic.v1.exceptions import APIException
 from mongoengine import DoesNotExist
