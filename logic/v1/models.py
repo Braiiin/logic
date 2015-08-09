@@ -1,6 +1,5 @@
 import datetime
 import importlib
-import json
 import logic
 from bson import ObjectId, DBRef
 from . import constants, db
@@ -49,9 +48,10 @@ class Document(db.Document):
 		return _cls(_type, **_kwargs)
 	
 	@classmethod
-	def fields_to_args(cls, override=None):
+	def fields_to_args(cls, override=None, **kwargs):
 		"""Converts fields to webargs"""
-		return {k: cls._field_to_arg(v, override) for k, v in cls._fields.items()}
+		kwargs.update(cls._fields)
+		return {k: cls._field_to_arg(v, override) for k, v in kwargs.items()}
 	
 	def load(self, **kwargs):
 		"""Loads kwargs into object"""

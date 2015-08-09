@@ -10,14 +10,14 @@ import importlib
 import logging
 
 from flask import Flask
+from flask_hashing import Hashing
 from flask_mongoengine import MongoEngine
-from flask_bcrypt import Bcrypt
 
 # datastore
 db = MongoEngine()
 
-# login-management
-bcrypt = Bcrypt()
+# hashing mechanism
+hashing = Hashing()
 
 logger = logging.getLogger('API')
 
@@ -38,8 +38,8 @@ def create_app(config='DevelopmentConfig', **configs):
 	# initialize MongoEngine with app
 	db.init_app(app)
 	
-	# initialize encryption mechanism
-	bcrypt.init_app(app)
+	# initialize hashing mechanism
+	hashing.init_app(app)
 	
 	# register all blueprints
 	for view in app.config['LIVE']:

@@ -15,7 +15,7 @@ session = {}
 
 def current_user():
 	"""Returns the user performing this API call"""
-	token = request.args.get('token', None)
+	token = request.args.get('access_token', None)
 	if not token:
 		return anonymous
 	session = Session(token=token).get()

@@ -3,3 +3,4 @@ flask-mongoengine==0.7.1
 pytest==2.7.1
 flask-bcrypt==0.6.2
 webargs==0.14.0
+flask-hashing==1.1

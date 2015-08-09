@@ -8,12 +8,11 @@ def KeyArg(cls, **kwargs):
 	parse_key = lambda key: {'id': key, 'collection': cls.__name__}
 	Key = lambda kwargs: DBRef(**kwargs)
 	return Arg(Key, use=parse_key, **kwargs)
-	
+
 	
 def KeyRepeatedArg(Arg):
 	"""web arg for iterable of Keys"""
-	
-	
+
 	
 def BooleanArg(Arg, **kwargs):
 	"""web arg for booleans"""
@@ -23,7 +22,7 @@ def BooleanArg(Arg, **kwargs):
 
 def DateTimeArg():
 	"""web arg for dates"""
-	
+
 
 def JsonArg():
 	"""web arg for JSONs"""

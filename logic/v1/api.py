@@ -49,6 +49,24 @@ def need(*needs):
 	return decorator
 
 
+def hook(f):
+	"""Decorator for all endpoints, to check for hooks"""
+	def call_hook(prefix, self, obj, data, rval=None):
+		"""Calls hook if exists"""
+		attr = getattr(self, '%s%s' % (prefix, f.__name__), None)
+		if callable(attr):
+			return attr(obj, data, rval)
+		return rval
+	
+	@functools.wraps(f)
+	def helper(self, obj, data):
+		call_hook('pre_', self, obj, data)
+		rval = f(self, obj, data)
+		rval = call_hook('post_', self, obj, data, rval)
+		return rval
+	return helper
+
+
 class BaseAPI(View):
 	"""
 	Extendable class for all APIs as Views
@@ -195,7 +213,8 @@ class BaseAPI(View):
 		raise NotImplementedError()
 	
 	# Default endpoints
-	
+
+	@hook
 	@need('get')
 	def get(self, obj, data):
 		"""Basic get operation for current object, allows API call to include
@@ -203,23 +222,27 @@ class BaseAPI(View):
 		are ignored."""
 		return obj or self.model(**data).get()
 	
+	@hook
 	@need('get')
 	def fetch(self, _, data):
 		"""Fetch multiple objects"""
 		return self.model(**data).fetch()
 	
+	@hook
 	@need('post')
 	def post(self, obj, data):
 		"""Create"""
 		assert not None, 'Post creates a new object.'
 		return self.model(**data).put()
 
+	@hook
 	@need('put')
 	def put(self, obj, data):
 		"""Update"""
 		assert obj is not None, 'ObjectID does not belong to an object.'
 		return obj.load(**data).save()
 	
+	@hook
 	@need('delete')
 	def delete(self, obj, _):
 		"""Basic delete operation for current object"""
