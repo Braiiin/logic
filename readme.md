@@ -87,6 +87,9 @@ Heed these guidelines when deciding where to put code.
 - api.py : handling input/output for models, permissions by endpoint
 - models.py : business logic
 
+Here are logic-tier responsibilities:
+- Convert all errors to human-readable messages.
+
 ##Production Deployment
 
 Assumes a non-root, sudo-capable user, deploying to Ubuntu 14.04

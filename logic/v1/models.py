@@ -58,12 +58,18 @@ class Document(db.Document):
 		[setattr(self, k, v) for k, v in kwargs.items()]
 		return self
 
-	def to_dict(self, excluding=None, map=None):
+	def to_dict(self, excluding=True, map=None):
 		"""Converts to dictionary
 		:param excluding: function taking key, value and returning boolean,
 		True to exclude the key-value pair
 		"""
-		excluding = excluding or (lambda k, v: k in ['created_at', 'updated_at'])
+		if excluding is True:
+			excluding = lambda k, v: k in ['created_at', 'updated_at']
+		if not excluding:
+			excluding = lambda k, v: False
+		if not callable(excluding):
+			raise APIException('Excluding must be one of the following types:'
+				'boolean, None, or callable')
 		_map = {'_id': 'id'}
 		_map.update(map or {})
 		return {_map.get(k, k): v for k, v in dict(self.to_mongo()).items()
@@ -76,7 +82,8 @@ class Document(db.Document):
 	def get(self):
 		"""Basic get operation"""
 		try:
-			return self.objects.get(**self.to_dict())
+			obj = self.objects.get(**self.to_dict())
+			return self.load(**obj.to_dict())
 		except DoesNotExist:
 			return None
 		

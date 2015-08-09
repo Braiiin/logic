@@ -143,7 +143,7 @@ class BaseAPI(View):
 		"""Invokes method and returns response"""
 		oid, method, settings = self._get_settings(path)
 		data = self._get_args(settings)
-		obj = self.model.objects(id=ObjectId(oid)).get() if oid else self.model()
+		obj = self.model.objects(id=ObjectId(oid)).get() if oid else None
 		function = self._get_function(obj, method)
 		return function(obj, data)	
 
@@ -211,7 +211,7 @@ class BaseAPI(View):
 	@need('post')
 	def post(self, obj, data):
 		"""Create"""
-		assert obj is None, 'Put creates a new object.'
+		assert not None, 'Post creates a new object.'
 		return self.model(**data).put()
 
 	@need('put')
