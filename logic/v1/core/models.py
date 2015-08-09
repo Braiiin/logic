@@ -15,15 +15,11 @@ class User(Document):
 	
 	
 class Session(Document):
-	# Idea: Each time a token is used, send a new access token and/or nonce 
-	#  back to the client - REMEMBER: nonce cannot be overridden (else
-	# middle men can post password hash against logic tier
 	
 	statuses = Document.choices('logged in', 'logged out')
 	
 	user = db.ReferenceField(User, required=True)
 	access_token = db.StringField(required=True)
-	nonce = db.StringField(required=True)
 	destroyed_at = db.DateTimeField(default=None)
 	
 	

@@ -80,10 +80,9 @@ class Document(db.Document):
 		return self.save(force_insert=True)
 
 	def get(self):
-		"""Basic get operation"""
+		"""Basic get operation - does NOT update original object"""
 		try:
-			obj = self.objects.get(**self.to_dict())
-			return self.load(**obj.to_dict())
+			return self.objects.get(**self.to_dict())
 		except DoesNotExist:
 			return None
 		

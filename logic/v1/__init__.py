@@ -18,7 +18,7 @@ def current_user():
 	token = request.args.get('access_token', None)
 	if not token:
 		return anonymous
-	session = Session(token=token).get()
+	session = Session(access_token=token).get()
 	if not session:
 		return anonymous
 	user = session.user.get()
