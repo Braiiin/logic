@@ -22,4 +22,8 @@ class Session(Document):
 	access_token = db.StringField(required=True)
 	
 	
-anonymous = User(email='an@nymo.us', username='an', password='@').put()
+anonymous = User(
+	email='an@nymo.us', 
+	username='an', 
+	password='@'
+).get_or_create()

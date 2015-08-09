@@ -58,10 +58,16 @@ class Document(db.Document):
 		[setattr(self, k, v) for k, v in kwargs.items()]
 		return self
 
-	def to_dict(self, excludes=['created_at', 'updated_at']):
-		"""Converts to dictionary"""
-		return {k: v for k, v in json.loads(self.to_json()).items() 
-		        if k not in excludes}
+	def to_dict(self, excluding=None, map=None):
+		"""Converts to dictionary
+		:param excluding: function taking key, value and returning boolean,
+		True to exclude the key-value pair
+		"""
+		excluding = excluding or (lambda k, v: k in ['created_at', 'updated_at'])
+		_map = {'_id': 'id'}
+		_map.update(map or {})
+		return {_map.get(k, k): v for k, v in dict(self.to_mongo()).items()
+		        if not excluding(k, v)}
 
 	def post(self):
 		"""Create operation"""
@@ -77,10 +83,21 @@ class Document(db.Document):
 	def fetch(self):
 		"""Fetch operation using queries"""
 		return self.objects.filter(**self.to_dict()).all()
-
+	
 	def put(self):
-		"""Alias for save"""
-		self.save()
+		"""Alias for save operation"""
+		return self.save()
+	
+	def get_or_create(self):
+		"""Get object or create it"""
+		obj = self.get()
+		return obj if obj else self.save()
+	
+	@property
+	def filter(self):
+		"""Filter by primary"""
+		primary = getattr(self, '_id', self.primary)
+		return {self.primary: primary} if primary else {}
 	
 	def delete(self):
 		"""Check for ID before deleting"""

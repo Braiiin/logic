@@ -1,3 +1,5 @@
+from mongoengine import NotUniqueError
+import pytest
 from .test_base import TestBase
 from logic.v1.models import Document, db
 from logic.v1.core.models import User
@@ -24,7 +26,8 @@ class TestModels(TestBase):
 		u2 = {'email': 'user2@braiiin.com', 'username': 'u2', 'password': 'p2'}
 		assert User(**u1).get() is None
 		
-		user = User(**u1).post()
+		user = User(**u1).put()
+		# assert user.id is not None
 		assert User(**u1).get() is not None
 		assert User(**u2).get() is None
 		assert len(User(**u1).fetch()) is 1
@@ -38,6 +41,27 @@ class TestModels(TestBase):
 		user.delete()
 		assert User(**u1).get() is None
 		assert User(**u2).get() is None
+		
+	def test_insert_anon_with_unique(self):
+		"""Tests inserting on unique fields"""
+		anonymous = User(
+			email='an@nymo.us',
+			username='an',
+			password='@'
+		).save()
+		with pytest.raises(NotUniqueError):
+			User(
+				email='an@nymo.us',
+				username='an',
+				password='@'
+			).save()  # cannot attempt to save a NEW object
+		anonymous.load(username='huehue').save()  # save existing object is OK
+		anonymous = User(
+			email='an@nymo.us',
+			username='an',
+			password='huehue'
+		).get_or_create()  # for subsequent retrievals, use get_or_create
+		assert anonymous is not None
 		
 	def test_fields_to_args_basic(self):
 		"""Tests that field_to_args works"""
