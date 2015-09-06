@@ -21,7 +21,7 @@ hashing = Hashing()
 
 logger = logging.getLogger('API')
 
-root = 'logic'
+_root = 'logic'
 
 
 def create_app(config='DevelopmentConfig', root=_root, **configs):
