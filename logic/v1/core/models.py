@@ -27,7 +27,7 @@ class Email(Document):
 
 	statuses = Document.choices('drafted', 'sent')
 
-	from = db.Stringfield(required=True, default='no-reply@braiiin.com')
+	replyto = db.Stringfield(required=True, default='no-reply@braiiin.com')
 	to = db.StringField(required=True),
 	subject = db.StringField(required=True)
 	html = db.StringField(),
