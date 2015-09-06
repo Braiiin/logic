@@ -39,7 +39,7 @@ class Email(Document):
 		self.load(**overrides)
 
 		try:
-			message = Message(From=self.from, To=self.to, charset="utf-8")
+			message = Message(From=self.replyto, To=self.to, charset="utf-8")
 		    message.Subject = self.subject
 		    message.Html = self.html
 		    message.Body = self.body
