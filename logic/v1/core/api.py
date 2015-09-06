@@ -3,13 +3,13 @@ from datetime import datetime
 from logic import hashing
 from logic.v1 import session
 from logic.v1.api import BaseAPI, need
-from .models import User, Session
+from .models import User, Session, Email
 from logic.v1.args import KeyArg, Arg
 
 
 class UserAPI(BaseAPI):
 	"""API for Users"""
-	
+
 	model = User
 
 	methods = {
@@ -20,7 +20,7 @@ class UserAPI(BaseAPI):
 			'args': model.fields_to_args()
 		},
 		'put': {
-			'args': model.fields_to_args()	
+			'args': model.fields_to_args()
 		},
 		'delete': {}
 	}
@@ -28,7 +28,7 @@ class UserAPI(BaseAPI):
 	endpoints = {
 		'fetch': {}
 	}
-	
+
 	def can(self, obj, user, need):
 		"""Required permissions implementation"""
 		if need in ['post', 'fetch', 'get']:
@@ -36,7 +36,7 @@ class UserAPI(BaseAPI):
 		if need == 'put':
 			return user.id == obj.id
 		return False
-	
+
 	def post_get(self, obj, data, rval):
 		"""Generates access_token if hashed password found"""
 		password, rval.password = rval.password, None
@@ -52,13 +52,13 @@ class UserAPI(BaseAPI):
 				rval = json.loads(rval.to_json())
 				rval.update({'access_token': access_token})
 		return rval
-			
+
 
 class SessionAPI(BaseAPI):
 	"""API for login sessions"""
-	
+
 	model = Session
-	
+
 	methods = {
 		'get': {
 			'args': model.fields_to_args(override={'required': False})
@@ -67,7 +67,7 @@ class SessionAPI(BaseAPI):
 			'args': model.fields_to_args()
 		}
 	}
-	
+
 	def can(self, session, user, need):
 		"""Required permissions implementation"""
 		if need in ['get', 'post']:
@@ -75,3 +75,9 @@ class SessionAPI(BaseAPI):
 		if need == 'put':
 			return user.id == session.user.get().id
 		return False
+
+
+class EmailAPI(BaseAPI):
+	"""API for emails"""
+
+	model = Email
