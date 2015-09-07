@@ -29,22 +29,28 @@ class Document(db.Document):
     @classmethod
     def _field_to_arg(cls, field, override=None):
         """Converts a single field to an Arg"""
-        to_arg = {
-            'ReferenceField': KeyArg,
-            'DictField': JsonArg,
-        }
-        to_type = {
-            'ReferenceField': getattr(field, 'document_type_obj', None),
-            'IntField': int
-        }
         name = field.__class__.__name__
-        _cls = to_arg.get(name, Arg)
-        _type, _kwargs = to_type.get(name, str), {}
-        _kwargs['required'] = field.required
+        _kwargs = {'required': field.required}
         if field.default:
             _kwargs['default'] = field.default
         _kwargs.update(override or {})
-        return _cls(_type, **_kwargs)
+        if name == 'BooleanField':
+            return BooleanArg(**_kwargs)
+        if name == 'ReferenceField':
+            return KeyArg(field.document_type_obj, **_kwargs)
+        if name == 'DictField':
+            return JsonArg(**_kwargs)
+        if name == 'IntField':
+            return Arg(int, **_kwargs)
+        return Arg(str, **_kwargs)
+
+    @classmethod
+    def fields_to_args(cls, override=None, exclude=(), **kwargs):
+        """Converts fields to webargs"""
+        values = {k: cls._field_to_arg(v, override) for k, v
+                  in cls._fields.items() if k not in exclude}
+        values.update(kwargs)
+        return values
 
     @classmethod
     def fields_to_args(cls, override=None, **kwargs):
