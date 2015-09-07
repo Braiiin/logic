@@ -52,12 +52,6 @@ class Document(db.Document):
         values.update(kwargs)
         return values
 
-    @classmethod
-    def fields_to_args(cls, override=None, **kwargs):
-        """Converts fields to webargs"""
-        kwargs.update(cls._fields)
-        return {k: cls._field_to_arg(v, override) for k, v in kwargs.items()}
-
     def load(self, **kwargs):
         """Loads kwargs into object"""
         [setattr(self, k, v) for k, v in kwargs.items()]
