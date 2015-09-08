@@ -264,6 +264,6 @@ class BaseAPI(View):
 
     @hook
     @need('get', 'post')
-    def get_or_create(self, obj, data, _):
+    def get_or_create(self, obj, data):
         """get or create"""
         return self.model(**data).get_or_create()
