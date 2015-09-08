@@ -17,6 +17,9 @@ class ServiceAPI(BaseAPI):
         'put': {
             'args': model.fields_to_args()
         },
+        'get_or_create': {
+            'args': model.fields_to_args()
+        },
         'delete': {}
     }
 

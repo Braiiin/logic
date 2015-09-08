@@ -261,3 +261,9 @@ class BaseAPI(View):
         """Basic delete operation for current object"""
         assert obj is not None, 'No such object.'
         return obj.delete()
+
+    @hook
+    @need('get', 'post')
+    def get_or_create(self, obj, data, _):
+        """get or create"""
+        return self.model(**data).get_or_create()
