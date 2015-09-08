@@ -1,5 +1,5 @@
 from logic.v1.api import BaseAPI, need
-from .models import Service, Employment
+from .models import Service, Employment, Token
 
 
 class ServiceAPI(BaseAPI):
@@ -38,6 +38,35 @@ class EmploymentAPI(BaseAPI):
     """employment API"""
 
     model = Employment
+
+    methods = {
+        'get': {
+            'args': model.fields_to_args(override={'required': False})
+        },
+        'post': {
+            'args': model.fields_to_args()
+        },
+        'put': {
+            'args': model.fields_to_args()
+        },
+        'delete': {}
+    }
+
+    endpoints = {
+        'fetch': {}
+    }
+
+    def can(self, obj, user, need):
+        """Required permissions implementation"""
+        if need in ['post', 'fetch', 'get', 'put']:
+            return True
+        return False
+
+
+class TokenAPI(BaseAPI):
+    """token API"""
+
+    model = Token
 
     methods = {
         'get': {
