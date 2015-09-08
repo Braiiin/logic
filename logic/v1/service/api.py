@@ -75,9 +75,6 @@ class TokenAPI(BaseAPI):
         'post': {
             'args': model.fields_to_args()
         },
-        'put': {
-            'args': model.fields_to_args()
-        },
         'delete': {}
     }
 

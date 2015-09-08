@@ -27,11 +27,11 @@ class Document(db.Document):
         return [(arg, arg) for arg in args]
 
     @classmethod
-    def _field_to_arg(cls, field, override=None):
+    def _field_to_arg(cls, field, override=None, default=False):
         """Converts a single field to an Arg"""
         name = field.__class__.__name__
         _kwargs = {'required': field.required}
-        if field.default:
+        if field.default and default:
             _kwargs['default'] = field.default
         _kwargs.update(override or {})
         if name == 'BooleanField':
@@ -45,9 +45,9 @@ class Document(db.Document):
         return Arg(str, **_kwargs)
 
     @classmethod
-    def fields_to_args(cls, override=None, exclude=(), **kwargs):
+    def fields_to_args(cls, override=None, default=False, exclude=(), **kwargs):
         """Converts fields to webargs"""
-        values = {k: cls._field_to_arg(v, override) for k, v
+        values = {k: cls._field_to_arg(v, override, default) for k, v
                   in cls._fields.items() if k not in exclude}
         values.update(kwargs)
         return values
@@ -63,7 +63,8 @@ class Document(db.Document):
         True to exclude the key-value pair
         """
         if excluding is True:
-            excluding = lambda k, v: k in ['created_at', 'updated_at']
+            excluding = lambda k, v: k in ['created_at', 'updated_at'] \
+                and hasattr(self, k)
         if not excluding:
             excluding = lambda k, v: False
         if not callable(excluding):

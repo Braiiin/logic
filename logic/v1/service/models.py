@@ -20,7 +20,6 @@ class Token(Document):
 
     key = db.StringField()
     service = db.ReferenceField(Service)
-    preset = db.DictField()
 
 
 class Employment(Document):
@@ -35,5 +34,5 @@ class Employment(Document):
     user = db.ReferenceField(User)
     service = db.ReferenceField(Service)
     status = db.StringField(choices=statuses)
-    privilege = db.StringField(default='user')
-    position = db.StringField(default='user')
+    privilege = db.StringField()
+    position = db.StringField()
