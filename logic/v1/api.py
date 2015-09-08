@@ -71,8 +71,8 @@ def paginate(f):
     """Paginates a list of results"""
     @functools.wraps(f)
     def helper(self, obj, data):
-        page = data.pop('page', None)
-        num_per_page = data.pop('num_per_page', None)
+        page = data.pop('page', 0)
+        num_per_page = data.pop('num_per_page', 10)
         results = f(self, obj, data)
         start, end = (page-1)*num_per_page, page*num_per_page
         return results[start:end]
