@@ -17,14 +17,14 @@ class ServiceAPI(BaseAPI):
         'put': {
             'args': model.fields_to_args()
         },
-        'get_or_create': {
-            'args': model.fields_to_args()
-        },
         'delete': {}
     }
 
     endpoints = {
-        'fetch': {}
+        'fetch': {},
+        'get_or_create': {
+            'args': model.fields_to_args()
+        },
     }
 
     def can(self, obj, user, need):
