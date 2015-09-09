@@ -31,8 +31,8 @@ class Employment(Document):
         'suspended'
     )
 
-    user = db.ReferenceField(User)
-    service = db.ReferenceField(Service)
+    user = db.StringField()  # id
+    service = db.StringField()  # id
     status = db.StringField(choices=statuses)
     privilege = db.StringField()
     position = db.StringField()

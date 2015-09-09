@@ -21,7 +21,9 @@ class ServiceAPI(BaseAPI):
     }
 
     endpoints = {
-        'fetch': {},
+        'fetch': {
+            'args': model.fields_to_args(override={'required': False})
+        },
         'get_or_create': {
             'args': model.fields_to_args()
         },
@@ -53,7 +55,9 @@ class EmploymentAPI(BaseAPI):
     }
 
     endpoints = {
-        'fetch': {}
+        'fetch': {
+            'args': model.fields_to_args(override={'required': False})
+        },
     }
 
     def can(self, obj, user, need):
@@ -79,7 +83,9 @@ class TokenAPI(BaseAPI):
     }
 
     endpoints = {
-        'fetch': {}
+        'fetch': {
+            'args': model.fields_to_args(override={'required': False})
+        },
     }
 
     def can(self, obj, user, need):
